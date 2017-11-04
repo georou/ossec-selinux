@@ -130,7 +130,6 @@ type ossec_syscheckd_t;
 type ossec_syscheckd_exec_t;
 init_daemon_domain(ossec_syscheckd_t, ossec_syscheckd_exec_t)
 
-
 # ossec bin dir
 type ossec_bin_t;
 files_type(ossec_bin_t)
@@ -160,7 +159,6 @@ files_pid_file(ossec_var_run_t)
 
 
 
-
 ########################################
 #
 # ossec local policy
@@ -183,6 +181,34 @@ require {
 #
 # ossec active response policy
 #
+allow ossec_ar_t self:capability { net_admin net_raw };
+allow ossec_ar_t self:rawip_socket { create getopt setopt };
+allow ossec_ar_t ossec_execd_t:unix_dgram_socket { read write };
+
+allow ossec_ar_t ossec_log_t:file { create_file_perms append_file_perms read };
+search_dirs_pattern(ossec_ar_t, ossec_log_t, ossec_log_t)
+search_dirs_pattern(ossec_ar_t, ossec_ar_bin_t, ossec_ar_bin_t)
+ossec_log_filetrans(ossec_ar_t, ossec_log_t, file)
+
+allow ossec_ar_t ossec_var_run_t:dir { manage_dir_perms };
+allow ossec_ar_t ossec_var_run_t:file { manage_file_perms };
+ossec_pid_filetrans(ossec_ar_t, ossec_var_run_t, file)
+
+kernel_getattr_proc(ossec_ar_t)
+kernel_read_all_proc(ossec_ar_t)
+
+auth_read_passwd(ossec_ar_t)
+
+tunable_policy(`ossec_ar_can_edit_iptables',`
+	# Allow ar to add and remove ip from chain
+	iptables_exec(ossec_ar_t)
+	allow ossec_ar_t iptables_var_run_t:file { lock open read unlock };
+')
+
+tunable_policy(`ossec_ar_can_exec_system_bin',`
+	# Exec allow to use basename and other bin utils
+	corecmd_exec_bin(ossec_ar_t)
+')
 
 ########################################
 #
@@ -194,6 +220,11 @@ allow ossec_analysisd_t self:unix_dgram_socket create_stream_socket_perms;
 
 allow ossec_analysisd_t ossec_log_t:file { create_file_perms append_file_perms read link unlink };
 ossec_log_filetrans(ossec_analysisd_t, ossec_log_t, file)
+# New month dir creation
+ossec_log_filetrans(ossec_analysisd_t, ossec_log_t, dir)
+filetrans_pattern(ossec_analysisd_t, ossec_stats_t, ossec_stats_t, dir);
+
+allow ossec_analysisd_t ossec_stats_t:dir { create_dir_perms write };
 
 allow ossec_analysisd_t ossec_var_run_t:file manage_file_perms;
 ossec_pid_filetrans(ossec_analysisd_t, ossec_var_run_t, file)
@@ -221,6 +252,7 @@ ossec_read_config(ossec_analysisd_t)
 sysnet_read_config(ossec_analysisd_t)
 
 miscfiles_read_generic_certs(ossec_analysisd_t)
+
 ########################################
 #
 # ossec execd policy
@@ -228,7 +260,6 @@ miscfiles_read_generic_certs(ossec_analysisd_t)
 
 allow ossec_execd_t self:capability { dac_override dac_read_search setgid };
 allow ossec_execd_t self:unix_dgram_socket create_stream_socket_perms;
-#allow ossec_execd_t ossec_ar_t:process { rlimitinh siginh noatsecure };
 
 allow ossec_execd_t ossec_execd_file_t:file { create_file_perms rw_file_perms };
 
@@ -258,6 +289,7 @@ ossec_read_config(ossec_execd_t)
 sysnet_read_config(ossec_execd_t)
 
 miscfiles_read_generic_certs(ossec_execd_t)
+
 ########################################
 #
 # ossec logcollector policy
@@ -274,16 +306,14 @@ ossec_pid_filetrans(ossec_logcollector_t, ossec_var_run_t, file)
 
 dgram_send_pattern(ossec_logcollector_t, ossec_queue_t, ossec_analysisd_sock_t, ossec_analysisd_t)
 
-#logging_read_all_logs(ossec_logcollector_t)
-apache_read_log(ossec_logcollector_t)
-logging_read_audit_log(ossec_logcollector_t)
-logging_read_generic_logs(ossec_logcollector_t)
+logging_read_all_logs(ossec_logcollector_t)
 
 ossec_read_config(ossec_logcollector_t)
 
 sysnet_read_config(ossec_logcollector_t)
 
 miscfiles_read_generic_certs(ossec_logcollector_t)
+
 ########################################
 #
 # ossec maild policy
@@ -291,6 +321,7 @@ miscfiles_read_generic_certs(ossec_logcollector_t)
 
 allow ossec_maild_t self:capability { dac_override dac_read_search setuid setgid sys_chroot };
 allow ossec_maild_t self:tcp_socket create_socket_perms;
+allow ossec_maild_t self:netlink_route_socket { r_netlink_socket_perms };
 
 allow ossec_maild_t ossec_log_t:file { create_file_perms append_file_perms read };
 ossec_log_filetrans(ossec_maild_t, ossec_log_t, file)
@@ -307,6 +338,7 @@ ossec_read_config(ossec_maild_t)
 sysnet_read_config(ossec_maild_t)
 
 miscfiles_read_generic_certs(ossec_maild_t)
+
 ########################################
 #
 # ossec monitord policy
@@ -372,6 +404,7 @@ tunable_policy(`ossec_remoted_can_network_connect',`
 	corenet_udp_bind_all_unreserved_ports(ossec_remoted_t)
 	corenet_udp_bind_generic_node(ossec_remoted_t)
 ')
+
 ########################################
 #
 # ossec syscheckd policy
@@ -400,6 +433,8 @@ ossec_tmp_filetrans(ossec_syscheckd_t, ossec_tmp_t, lnk_file)
 dgram_send_pattern(ossec_syscheckd_t, ossec_queue_t, ossec_analysisd_sock_t, ossec_analysisd_t)
 
 manage_lnk_files_pattern(ossec_syscheckd_t, ossec_tmp_t, ossec_tmp_t)
+
+kernel_read_network_state(ossec_syscheckd_t)
 
 corecmd_exec_bin(ossec_syscheckd_t)
 corecmd_exec_shell(ossec_syscheckd_t)
@@ -431,53 +466,10 @@ userdom_search_user_tmp_dirs(ossec_syscheckd_t)
 
 
 
-
-
 #################
-
-
-
 # Questionable:
 #seutil_read_bin_policy(ossec_syscheckd_t)
 
-# Double check:
-
-allow ossec_maild_t self:netlink_route_socket { r_netlink_socket_perms };
-
-###### Working:
-allow ossec_ar_t self:capability { net_admin net_raw };
-allow ossec_ar_t self:rawip_socket { create getopt setopt };
-allow ossec_ar_t ossec_execd_t:unix_dgram_socket { read write };
-
-allow ossec_ar_t ossec_log_t:file { create_file_perms append_file_perms read };
-search_dirs_pattern(ossec_ar_t, ossec_log_t, ossec_log_t)
-search_dirs_pattern(ossec_ar_t, ossec_ar_bin_t, ossec_ar_bin_t)
-ossec_log_filetrans(ossec_ar_t, ossec_log_t, file)
-
-allow ossec_ar_t ossec_var_run_t:dir { manage_dir_perms };
-allow ossec_ar_t ossec_var_run_t:file { manage_file_perms };
-ossec_pid_filetrans(ossec_ar_t, ossec_var_run_t, file)
-
-kernel_getattr_proc(ossec_ar_t)
-kernel_read_all_proc(ossec_ar_t)
-
-auth_read_passwd(ossec_ar_t)
 
 
-kernel_read_network_state(ossec_syscheckd_t)
-# New month dir creation
-allow ossec_analysisd_t ossec_stats_t:dir { create_dir_perms write };
-ossec_log_filetrans(ossec_analysisd_t, ossec_log_t, dir)
-filetrans_pattern(ossec_analysisd_t, ossec_stats_t, ossec_stats_t, dir);
 
-
-tunable_policy(`ossec_ar_can_edit_iptables',`
-	# Allow ar to add and remove ip from chain
-	iptables_exec(ossec_ar_t)
-	allow ossec_ar_t iptables_var_run_t:file { lock open read unlock };
-')
-
-tunable_policy(`ossec_ar_can_exec_system_bin',`
-	# Exec allow to use basename and other bin utils
-	corecmd_exec_bin(ossec_ar_t)
-')
