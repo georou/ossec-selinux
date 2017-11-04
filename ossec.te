@@ -1,0 +1,322 @@
+
+policy_module(ossec,1.1.0)
+
+########################################
+#
+# Declarations
+#
+
+###
+# Active-Response Domain and File Types
+type ossec_ar_t;
+type ossec_ar_exec_t;
+domain_type(ossec_ar_t)
+domain_entry_file(ossec_ar_t, ossec_ar_exec_t)
+domtrans_pattern(ossec_execd_t, ossec_ar_exec_t, ossec_ar_t)
+role system_r types ossec_ar_t;
+files_type(ossec_ar_exec_t);
+
+type ossec_ar_bin_t;
+files_type(ossec_ar_bin_t);
+
+unconfined_domain(ossec_ar_t)
+###
+
+# ossec-agentlessd daemon
+type ossec_agentlessd_t;
+type ossec_agentlessd_exec_t;
+init_daemon_domain(ossec_agentlessd_t, ossec_agentlessd_exec_t)
+
+# ossec-analysisd daemon
+type ossec_analysisd_t;
+type ossec_analysisd_exec_t;
+init_daemon_domain(ossec_analysisd_t, ossec_analysisd_exec_t)
+
+type ossec_analysisd_configfile_t;
+files_config_file(ossec_analysisd_configfile_t)
+
+type ossec_analysisd_file_t;
+files_type(ossec_analysisd_file_t)
+
+type ossec_analysisd_sock_t;
+files_type(ossec_analysisd_sock_t)
+
+# ossec-csyslogd daemon
+type ossec_csyslogd_t;
+type ossec_csyslogd_exec_t;
+init_daemon_domain(ossec_csyslogd_t, ossec_csyslogd_exec_t)
+
+# ossec-dbd daemon
+type ossec_dbd_t;
+type ossec_dbd_exec_t;
+init_daemon_domain(ossec_dbd_t, ossec_dbd_exec_t)
+
+# ossec etc dir
+type ossec_etc_t;
+files_config_file(ossec_etc_t)
+
+# ossec-execd daemon
+type ossec_execd_t;
+type ossec_execd_exec_t;
+init_daemon_domain(ossec_execd_t, ossec_execd_exec_t)
+
+type ossec_execd_file_t;
+files_type(ossec_execd_file_t)
+
+type ossec_execd_journal_t;
+files_type(ossec_execd_journal_t)
+
+type ossec_execd_sock_t;
+files_type(ossec_execd_sock_t)
+
+# ossec_initrc
+type ossec_initrc_exec_t;
+init_script_file(ossec_initrc_exec_t)
+
+# ossec-logcollector daemon
+type ossec_logcollector_t;
+type ossec_logcollector_exec_t;
+init_daemon_domain(ossec_logcollector_t, ossec_logcollector_exec_t)
+
+# ossec logs dir
+type ossec_log_t;
+logging_log_file(ossec_log_t)
+
+# ossec-maild daemon
+type ossec_maild_t;
+type ossec_maild_exec_t;
+init_daemon_domain(ossec_maild_t, ossec_maild_exec_t)
+
+# ossec-monitord daemon
+type ossec_monitord_t;
+type ossec_monitord_exec_t;
+init_daemon_domain(ossec_monitord_t, ossec_monitord_exec_t)
+
+# ossec-remoted daemon
+type ossec_remoted_t;
+type ossec_remoted_exec_t;
+init_daemon_domain(ossec_remoted_t, ossec_remoted_exec_t)
+
+type ossec_remoted_configfile_t;
+files_config_file(ossec_remoted_configfile_t);
+
+type ossec_remoted_file_t;
+files_type(ossec_remoted_file_t)
+
+type ossec_remoted_sock_t;
+files_type(ossec_remoted_sock_t)
+
+# ossec-syscheckd daemon
+type ossec_syscheckd_t;
+type ossec_syscheckd_exec_t;
+init_daemon_domain(ossec_syscheckd_t, ossec_syscheckd_exec_t)
+
+
+# ossec bin dir
+type ossec_bin_t;
+files_type(ossec_bin_t)
+
+# ossec queue dir
+type ossec_queue_t;
+files_type(ossec_queue_t)
+
+# ossec rules dir
+type ossec_rule_t;
+files_config_file(ossec_rule_t)
+
+# ossec stats dir
+type ossec_stats_t;
+files_type(ossec_stats_t)
+
+# ossec tmp dir
+type ossec_tmp_t;
+files_tmp_file(ossec_tmp_t)
+
+# ossec var run dir
+type ossec_var_t;
+files_type(ossec_var_t)
+
+type ossec_var_run_t;
+files_pid_file(ossec_var_run_t)
+
+
+require {
+	type httpd_t;
+	type hi_reserved_port_t;
+
+	class file { rename read lock create write getattr unlink open append entrypoint };
+	#class dir { write getattr read remove_name create add_name };
+	class process { setsched transition rlimitinh siginh noatsecure };
+	class capability { dac_override dac_read_search setuid setgid fsetid sys_chroot sys_nice };
+	class tcp_socket { create name_bind name_connect };
+	class udp_socket { create bind name_bind node_bind };
+}
+
+
+########################################
+#
+# ossec local policy
+#
+
+
+allow ossec_analysisd_t ossec_log_t:file { create_file_perms append_file_perms read link unlink };
+allow ossec_analysisd_t ossec_var_run_t:file manage_file_perms;
+allow ossec_analysisd_t self:capability { dac_override dac_read_search fsetid setuid setgid sys_chroot };
+allow ossec_analysisd_t self:unix_dgram_socket create_stream_socket_perms;
+
+allow ossec_execd_t ossec_ar_t:process { rlimitinh siginh noatsecure };
+allow ossec_execd_t ossec_execd_file_t:file { create_file_perms rw_file_perms };
+allow ossec_execd_t ossec_execd_journal_t:file manage_file_perms;
+allow ossec_execd_t ossec_log_t:file { create_file_perms append_file_perms read };
+allow ossec_execd_t ossec_var_run_t:file manage_file_perms;
+allow ossec_execd_t self:capability { dac_override dac_read_search setgid };
+allow ossec_execd_t self:unix_dgram_socket create_stream_socket_perms;
+
+allow ossec_logcollector_t ossec_log_t:file { create_file_perms append_file_perms read };
+allow ossec_logcollector_t ossec_var_run_t:file manage_file_perms;
+allow ossec_logcollector_t self:capability { dac_override dac_read_search };
+allow ossec_logcollector_t self:unix_dgram_socket create_socket_perms;
+
+allow ossec_maild_t ossec_log_t:file { create_file_perms append_file_perms read };
+allow ossec_maild_t ossec_var_run_t:file manage_file_perms;
+allow ossec_maild_t self:capability { dac_override dac_read_search setuid setgid sys_chroot };
+allow ossec_maild_t self:tcp_socket create_socket_perms;
+
+allow ossec_monitord_t ossec_log_t:file { create_file_perms append_file_perms write read };
+allow ossec_monitord_t ossec_remoted_file_t:file getattr_file_perms;
+allow ossec_monitord_t ossec_var_run_t:file manage_file_perms;
+allow ossec_monitord_t self:capability { dac_override dac_read_search setuid setgid sys_chroot };
+allow ossec_monitord_t self:unix_dgram_socket create_socket_perms;
+
+allow ossec_remoted_t ossec_log_t:file { create_file_perms append_file_perms read };
+allow ossec_remoted_t ossec_var_run_t:file manage_file_perms;
+allow ossec_remoted_t self:capability { dac_override dac_read_search setuid setgid sys_chroot };
+allow ossec_remoted_t self:udp_socket create_stream_socket_perms;
+allow ossec_remoted_t self:unix_dgram_socket create_stream_socket_perms;
+
+allow ossec_syscheckd_t hi_reserved_port_t:tcp_socket name_bind;
+allow ossec_syscheckd_t hi_reserved_port_t:udp_socket name_bind;
+allow ossec_syscheckd_t ossec_log_t:file { create_file_perms append_file_perms read };
+allow ossec_syscheckd_t ossec_queue_t:dir { create_dir_perms rw_dir_perms };
+allow ossec_syscheckd_t ossec_queue_t:file { create_file_perms rename_file_perms write_file_perms };
+allow ossec_syscheckd_t ossec_var_run_t:file manage_file_perms;
+allow ossec_syscheckd_t self:capability { dac_override dac_read_search kill setuid setgid sys_chroot sys_nice };
+allow ossec_syscheckd_t self:process { setsched };
+allow ossec_syscheckd_t self:tcp_socket create_socket_perms;
+allow ossec_syscheckd_t self:udp_socket create_socket_perms;
+allow ossec_syscheckd_t self:unix_dgram_socket create_socket_perms;
+
+
+auth_read_passwd(ossec_analysisd_t)
+auth_read_passwd(ossec_execd_t)
+auth_read_passwd(ossec_maild_t)
+auth_read_passwd(ossec_monitord_t)
+auth_read_passwd(ossec_remoted_t)
+
+corecmd_exec_bin(ossec_syscheckd_t)
+corecmd_exec_shell(ossec_execd_t)
+corecmd_exec_shell(ossec_syscheckd_t)
+
+corenet_tcp_bind_generic_node(ossec_syscheckd_t)
+corenet_tcp_bind_generic_port(ossec_syscheckd_t)
+corenet_tcp_bind_reserved_port(ossec_syscheckd_t)
+corenet_tcp_connect_smtp_port(ossec_maild_t)
+
+corenet_udp_bind_all_unreserved_ports(ossec_remoted_t)
+corenet_udp_bind_generic_node(ossec_remoted_t)
+corenet_udp_bind_generic_node(ossec_syscheckd_t)
+corenet_udp_bind_generic_port(ossec_syscheckd_t)
+corenet_udp_bind_reserved_port(ossec_syscheckd_t)
+
+dev_getattr_all(ossec_syscheckd_t)
+dev_read_urand(ossec_execd_t)
+
+dgram_send_pattern(ossec_analysisd_t, ossec_queue_t, ossec_execd_sock_t, ossec_execd_t)
+dgram_send_pattern(ossec_analysisd_t, ossec_queue_t, ossec_remoted_sock_t, ossec_remoted_t)
+dgram_send_pattern(ossec_logcollector_t, ossec_queue_t, ossec_analysisd_sock_t, ossec_analysisd_t)
+dgram_send_pattern(ossec_monitord_t, ossec_queue_t, ossec_analysisd_sock_t, ossec_analysisd_t)
+dgram_send_pattern(ossec_remoted_t, ossec_queue_t, ossec_analysisd_sock_t, ossec_analysisd_t)
+dgram_send_pattern(ossec_syscheckd_t, ossec_queue_t, ossec_analysisd_sock_t, ossec_analysisd_t)
+
+domain_read_all_domains_state(ossec_syscheckd_t)
+domain_dontaudit_getsession_all_domains(ossec_syscheckd_t)
+domain_getsession_all_domains(ossec_syscheckd_t)
+domain_getpgid_all_domains(ossec_syscheckd_t)
+domain_dontaudit_signull_all_domains(ossec_syscheckd_t)
+
+files_dontaudit_getattr_all_sockets(ossec_syscheckd_t)
+files_read_all_files(ossec_syscheckd_t)
+files_read_all_symlinks(ossec_syscheckd_t)
+
+filetrans_pattern(ossec_execd_t, ossec_var_t, ossec_execd_journal_t, file, "execd.sqlite-journal");
+
+list_dirs_pattern(ossec_monitord_t, ossec_queue_t, ossec_remoted_file_t)
+
+logging_read_all_logs(ossec_logcollector_t)
+
+manage_files_pattern(ossec_analysisd_t, ossec_analysisd_file_t, ossec_analysisd_file_t)
+manage_files_pattern(ossec_analysisd_t, ossec_etc_t, ossec_analysisd_configfile_t)
+manage_files_pattern(ossec_analysisd_t, ossec_stats_t, ossec_stats_t)
+manage_files_pattern(ossec_remoted_t, ossec_etc_t, ossec_remoted_configfile_t)
+
+manage_lnk_files_pattern(ossec_syscheckd_t, ossec_tmp_t, ossec_tmp_t)
+
+manage_sock_files_pattern(ossec_analysisd_t, ossec_queue_t, ossec_analysisd_sock_t)
+manage_sock_files_pattern(ossec_execd_t, ossec_queue_t, ossec_execd_sock_t)
+manage_sock_files_pattern(ossec_remoted_t, ossec_queue_t, ossec_remoted_sock_t)
+
+ossec_log_filetrans(ossec_analysisd_t, ossec_log_t, file)
+ossec_log_filetrans(ossec_execd_t, ossec_log_t, file)
+ossec_log_filetrans(ossec_logcollector_t, ossec_log_t, file)
+ossec_log_filetrans(ossec_maild_t, ossec_log_t, file)
+ossec_log_filetrans(ossec_monitord_t, ossec_log_t, file)
+ossec_log_filetrans(ossec_remoted_t, ossec_log_t, file)
+ossec_log_filetrans(ossec_syscheckd_t, ossec_log_t, file)
+
+ossec_pid_filetrans(ossec_analysisd_t, ossec_var_run_t, file)
+ossec_pid_filetrans(ossec_execd_t, ossec_var_run_t, file)
+ossec_pid_filetrans(ossec_logcollector_t, ossec_var_run_t, file)
+ossec_pid_filetrans(ossec_maild_t, ossec_var_run_t, file)
+ossec_pid_filetrans(ossec_monitord_t, ossec_var_run_t, file)
+ossec_pid_filetrans(ossec_remoted_t, ossec_var_run_t, file)
+ossec_pid_filetrans(ossec_syscheckd_t, ossec_var_run_t, file)
+
+ossec_queue_filetrans(ossec_analysisd_t, ossec_analysisd_file_t, file)
+ossec_queue_filetrans(ossec_analysisd_t, ossec_analysisd_sock_t, sock_file)
+ossec_queue_filetrans(ossec_execd_t, ossec_execd_sock_t, sock_file)
+ossec_queue_filetrans(ossec_remoted_t, ossec_remoted_sock_t, sock_file)
+ossec_queue_filetrans(ossec_syscheckd_t, ossec_queue_t, file)
+
+ossec_read_config(ossec_analysisd_t)
+ossec_read_config(ossec_execd_t)
+ossec_read_config(ossec_logcollector_t)
+ossec_read_config(ossec_maild_t)
+ossec_read_config(ossec_monitord_t)
+ossec_read_config(ossec_remoted_t)
+ossec_read_config(ossec_syscheckd_t)
+
+ossec_read_logs(httpd_t)
+ossec_read_queue(httpd_t)
+ossec_read_stats(httpd_t)
+
+ossec_tmp_filetrans(ossec_syscheckd_t, ossec_tmp_t, lnk_file)
+
+read_files_pattern(ossec_analysisd_t, ossec_rule_t, ossec_rule_t)
+
+rw_files_pattern(ossec_remoted_t, ossec_remoted_file_t, ossec_remoted_file_t)
+
+search_dirs_pattern(ossec_analysisd_t, ossec_rule_t, ossec_rule_t)
+search_dirs_pattern(ossec_execd_t, ossec_ar_bin_t, ossec_ar_bin_t)
+
+seutil_read_bin_policy(ossec_syscheckd_t)
+
+sysnet_read_config(ossec_analysisd_t)
+sysnet_read_config(ossec_execd_t)
+sysnet_read_config(ossec_logcollector_t)
+sysnet_read_config(ossec_maild_t)
+sysnet_read_config(ossec_monitord_t)
+sysnet_read_config(ossec_remoted_t)
+sysnet_read_config(ossec_syscheckd_t)
+
+userdom_search_user_tmp_dirs(ossec_syscheckd_t)
+
