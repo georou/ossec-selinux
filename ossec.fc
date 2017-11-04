@@ -1,15 +1,29 @@
-# ossec executable will have:
-# label: system_u:object_r:ossec_exec_t
-# MLS sensitivity: s0
-# MCS categories: <none>
+/etc/init\.d/ossec-hids           --      gen_context(system_u:object_r:ossec_initrc_exec_t,s0)
 
-#/usr/bin/mlogc                  --      gen_context(system_u:object_r:mlogc_exec_t,s0)
-#/var/log/mlogc(/.*)?                    gen_context(system_u:object_r:mlogc_log_t,s0)
-#/var/log/mlogc/data(/.*)?               gen_context(system_u:object_r:mlogc_log_t,s0)
+/var/ossec/agentless(/.*)?                gen_context(system_u:object_r:ossec_var_t,s0)
+
+/var/ossec/active-response/bin(/.*)? --   gen_context(system_u:object_r:ossec_ar_exec_t,s0)
+/var/ossec/active-response(/.*)?          gen_context(system_u:object_r:ossec_ar_bin_t,s0)
+
+/var/ossec/bin(/.*)?                      gen_context(system_u:object_r:bin_t,s0)
+/var/ossec/bin/ossec-agentlessd  --       gen_context(system_u:object_r:ossec_agentlessd_exec_t,s0)
+/var/ossec/bin/ossec-analysisd   --       gen_context(system_u:object_r:ossec_analysisd_exec_t,s0)
+/var/ossec/bin/ossec-control     --       gen_context(system_u:object_r:ossec_initrc_exec_t,s0)
+/var/ossec/bin/ossec-csyslogd    --       gen_context(system_u:object_r:ossec_csyslogd_exec_t,s0)
+/var/ossec/bin/ossec-dbd         --       gen_context(system_u:object_r:ossec_dbd_exec_t,s0)
+/var/ossec/bin/ossec-execd       --       gen_context(system_u:object_r:ossec_execd_exec_t,s0)
+/var/ossec/bin/ossec-logcollector --      gen_context(system_u:object_r:ossec_logcollector_exec_t,s0)
+/var/ossec/bin/ossec-maild       --       gen_context(system_u:object_r:ossec_maild_exec_t,s0)
+/var/ossec/bin/ossec-monitord    --       gen_context(system_u:object_r:ossec_monitord_exec_t,s0)
+/var/ossec/bin/ossec-remoted     --       gen_context(system_u:object_r:ossec_remoted_exec_t,s0)
+/var/ossec/bin/ossec-server.sh   --       gen_context(system_u:object_r:ossec_initrc_exec_t,s0)
+/var/ossec/bin/ossec-syscheckd   --       gen_context(system_u:object_r:ossec_syscheckd_exec_t,s0)
+
+/var/ossec/etc(/.*)?                      gen_context(system_u:object_r:ossec_etc_t,s0)
+/var/ossec/etc/shared/ar\.conf         -- gen_context(system_u:object_r:ossec_analysisd_configfile_t,s0)
+/var/ossec/etc/shared/merged\.mg       -- gen_context(system_u:object_r:ossec_remoted_configfile_t,s0)
 
 /var/ossec/logs(/.*)?                     gen_context(system_u:object_r:ossec_log_t,s0)
-/var/ossec/stats(/.*)?                    gen_context(system_u:object_r:ossec_stats_t,s0)
-/var/ossec/agentless(/.*)?                gen_context(system_u:object_r:ossec_var_t,s0)
 
 /var/ossec/queue(/.*)?                    gen_context(system_u:object_r:ossec_queue_t,s0)
 /var/ossec/queue/rids(/.*)?               gen_context(system_u:object_r:ossec_remoted_file_t,s0)
@@ -20,41 +34,19 @@
 /var/ossec/queue/alerts/execq          -s gen_context(system_u:object_r:ossec_execd_sock_t,s0)
 /var/ossec/queue/alerts/ar             -s gen_context(system_u:object_r:ossec_remoted_sock_t,s0)
 /var/ossec/queue/ossec/queue           -s gen_context(system_u:object_r:ossec_analysisd_sock_t,s0)
-#/var/ossec/queue/fts/hostinfo          -- gen_context(system_u:object_r:ossec_analysisd_file_t,s0)
-#/var/ossec/queue/fts/fts-queue         -- gen_context(system_u:object_r:ossec_analysisd_file_t,s0)
-#/var/ossec/queue/fts/ig-queue          -- gen_context(system_u:object_r:ossec_analysisd_file_t,s0)
+
+/var/ossec/rules(/.*)?                    gen_context(system_u:object_r:ossec_rule_t,s0)
+
+/var/ossec/stats(/.*)?                    gen_context(system_u:object_r:ossec_stats_t,s0)
+
+/var/ossec/tmp(/.*)?                      gen_context(system_u:object_r:ossec_tmp_t,s0)
 
 /var/ossec/var/run(/.*)?                  gen_context(system_u:object_r:ossec_var_run_t,s0)
 /var/ossec/var/execd\.sqlite           -- gen_context(system_u:object_r:ossec_execd_file_t,s0)
 /var/ossec/var/execd\.sqlite-journal   -- gen_context(system_u:object_r:ossec_execd_journal_t,s0)
-#/var/ossec/var/execd\.sqlite(-.*)?     -- gen_context(system_u:object_r:ossec_execd_file_t,s0)
 /var/ossec/var(/.*)?                      gen_context(system_u:object_r:ossec_var_t,s0)
 
-/var/ossec/tmp(/.*)?                      gen_context(system_u:object_r:ossec_tmp_t,s0)
 
-/var/ossec/etc(/.*)?                      gen_context(system_u:object_r:ossec_etc_t,s0)
-/var/ossec/etc/shared/ar\.conf         -- gen_context(system_u:object_r:ossec_analysisd_configfile_t,s0)
-/var/ossec/etc/shared/merged\.mg       -- gen_context(system_u:object_r:ossec_remoted_configfile_t,s0)
-#/var/ossec/etc/shared(/.*)?               gen_context(system_u:object_r:ossec_etc_share_t,s0)
-/var/ossec/rules(/.*)?                    gen_context(system_u:object_r:ossec_rule_t,s0)
 
-#/var/ossec/active-response/bin(/.*)? --   gen_context(system_u:object_r:ossec_script_exec_t,s0)
-#/var/ossec/active-response(/.*)?          gen_context(system_u:object_r:ossec_script_t,s0)
-/var/ossec/active-response/bin(/.*)? --   gen_context(system_u:object_r:ossec_ar_exec_t,s0)
-/var/ossec/active-response(/.*)?          gen_context(system_u:object_r:ossec_ar_bin_t,s0)
 
-/etc/init.d/ossec-hids           --       gen_context(system_u:object_r:ossec_initrc_exec_t,s0)
-/var/ossec/bin/ossec-control     --       gen_context(system_u:object_r:ossec_initrc_exec_t,s0)
-/var/ossec/bin/ossec-server.sh   --       gen_context(system_u:object_r:ossec_initrc_exec_t,s0)
-/var/ossec/bin/ossec-maild       --       gen_context(system_u:object_r:ossec_maild_exec_t,s0)
-/var/ossec/bin/ossec-execd       --       gen_context(system_u:object_r:ossec_execd_exec_t,s0)
-/var/ossec/bin/ossec-analysisd   --       gen_context(system_u:object_r:ossec_analysisd_exec_t,s0)
-/var/ossec/bin/ossec-logcollector --      gen_context(system_u:object_r:ossec_logcollector_exec_t,s0)
-/var/ossec/bin/ossec-remoted     --       gen_context(system_u:object_r:ossec_remoted_exec_t,s0)
-/var/ossec/bin/ossec-syscheckd   --       gen_context(system_u:object_r:ossec_syscheckd_exec_t,s0)
-/var/ossec/bin/ossec-monitord    --       gen_context(system_u:object_r:ossec_monitord_exec_t,s0)
-/var/ossec/bin/ossec-dbd         --       gen_context(system_u:object_r:ossec_dbd_exec_t,s0)
-/var/ossec/bin/ossec-csyslogd    --       gen_context(system_u:object_r:ossec_csyslogd_exec_t,s0)
-/var/ossec/bin/ossec-agentlessd  --       gen_context(system_u:object_r:ossec_agentlessd_exec_t,s0)
-/var/ossec/bin(/.*)?                      gen_context(system_u:object_r:bin_t,s0)
 

@@ -1,21 +1,3 @@
-## <summary>ossec policy</summary>
-## <desc>
-##      <p>
-##              More descriptive text about ossec.  The desc
-##              tag can also use p, ul, and ol
-##              html tags for formatting.
-##      </p>
-##      <p>
-##              This policy supports the following ossec features:
-##              <ul>
-##              <li>Feature A</li>
-##              <li>Feature B</li>
-##              <li>Feature C</li>
-##              </ul>
-##      </p>
-## </desc>
-#
-
 ########################################
 ## <summary>
 ##      Execute a domain transition to run ossec.
@@ -39,7 +21,112 @@ interface(`ossec_domtrans',`
         role system_r types ossec_t;
 
         domtrans_pattern($1, ossec_exec_t, ossec_t)
-        #domtrans_pattern($1,ossec_exec_t,ossec_t)
+')
+
+########################################
+## <summary>
+##      Read ossec log files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to read log files.
+##      </summary>
+## </param>
+#
+interface(`ossec_log_filetrans',`
+	gen_require(`
+    		type var_t;
+		type ossec_var_t, ossec_log_t;
+	')
+
+    	allow $1 var_t:dir search_dir_perms;
+	allow $1 ossec_log_t:dir { search_dir_perms create_dir_perms };
+	filetrans_pattern($1, ossec_log_t, $2, $3, $4)
+')
+
+########################################
+## <summary>
+##      Write ossec stat files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Allow appending to the existing stats file
+##      </summary>
+## </param>
+#
+interface(`ossec_manage_stats',`
+    	gen_require(`
+        	type var_t;
+        	type ossec_stats_t;
+    	')
+
+    	allow $1 var_t:dir search_dir_perms;
+    	append_files_pattern($1, ossec_stats_t, ossec_stats_t)
+')
+
+########################################
+## <summary>
+##      Read ossec pid files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to read pid files.
+##      </summary>
+## </param>
+#
+interface(`ossec_pid_filetrans',`
+	gen_require(`
+        type var_t;
+		type ossec_var_t, ossec_var_run_t;
+	')
+
+    	allow $1 var_t:dir search_dir_perms;
+	allow $1 ossec_var_t:dir search_dir_perms;
+	allow $1 ossec_var_run_t:lnk_file read_lnk_file_perms;
+	filetrans_pattern($1, ossec_var_run_t, $2, $3, $4)
+')
+
+########################################
+## <summary>
+##      Allow trans to ossec queue.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access
+##      </summary>
+## </param>
+#
+interface(`ossec_queue_filetrans',`
+    	gen_require(`
+        	type var_t;
+        	type ossec_queue_t;
+    	')
+
+    	allow $1 var_t:dir search_dir_perms;
+    	allow $1 ossec_queue_t:dir search_dir_perms;
+    	filetrans_pattern($1, ossec_queue_t, $2, $3, $4)
+')
+
+########################################
+## <summary>
+##      Read ossec config files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to read the config files.
+##      </summary>
+## </param>
+#
+interface(`ossec_read_config',`
+	gen_require(`
+        type var_t;
+		type ossec_etc_t;
+	')
+
+    	allow $1 var_t:dir search_dir_perms;
+    	#allow $1 ossec_etc_t:dir search_dir_perms;
+	read_lnk_files_pattern($1, ossec_etc_t, configfile)
+    	files_read_config_files($1, ossec_etc_t)
 ')
 
 ########################################
@@ -84,17 +171,24 @@ interface(`ossec_read_logs',`
 #        allow $1 ossec_log_t:file write;
 #')
 
+########################################
+## <summary>
+##      Read ossec stat files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Allow reading of ossec repsonse stats
+##      </summary>
+## </param>
+#
+interface(`ossec_read_stats',`
+    	gen_require(`
+        	type var_t;
+        	type ossec_stats_t;
+    	')
 
-interface(`ossec_read_config',`
-	gen_require(`
-        type var_t;
-		type ossec_etc_t;
-	')
-
-    allow $1 var_t:dir search_dir_perms;
-    #allow $1 ossec_etc_t:dir search_dir_perms;
-	read_lnk_files_pattern($1, ossec_etc_t, configfile)
-    files_read_config_files($1, ossec_etc_t)
+    	allow $1 var_t:dir search_dir_perms;
+    	read_files_pattern($1, ossec_stats_t, ossec_stats_t)
 ')
 
 #interface(`ossec_read_shared_config',`
@@ -105,14 +199,61 @@ interface(`ossec_read_config',`
 #	')
 #
 #	allow $1 var_t:dir search_dir_perms;
-#    allow $1 ossec_etc_t:dir search_dir_perms;
-#    #allow $1 ossec_etc_share_t:dir search_dir_perms;
-#    allow $1 ossec_etc_share_t:file read_file_perms;
-#    #allow $1 ossec_analysisd_file_t:file read_file_perms;
+#    	allow $1 ossec_etc_t:dir search_dir_perms;
+#    	#allow $1 ossec_etc_share_t:dir search_dir_perms;
+#    	allow $1 ossec_etc_share_t:file read_file_perms;
+#    	#allow $1 ossec_analysisd_file_t:file read_file_perms;
 #	#search_dirs_pattern($1, ossec_etc_t, ossec_etc_t)
 #	#search_dirs_pattern($1, ossec_etc_share_t, ossec_etc_share_t)
 #	#read_files_pattern($1, ossec_etc_share_t, ossec_etc_share_t)
 #')
+
+########################################
+## <summary>
+##      Read ossec queue files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Allow reading queue files that are next to be scanned
+##      </summary>
+## </param>
+#
+interface(`ossec_read_queue',`
+    	gen_require(`
+        	type var_t;
+        	type ossec_queue_t;
+    	')
+
+    	allow $1 var_t:dir search_dir_perms;
+    	allow $1 ossec_queue_t:dir list_dir_perms;
+    	allow $1 ossec_queue_t:file read_file_perms;
+    	allow $1 ossec_remoted_file_t:dir list_dir_perms;
+    	allow $1 ossec_remoted_file_t:file read_file_perms;
+    	allow $1 ossec_analysisd_file_t:dir list_dir_perms;
+    	allow $1 ossec_analysisd_file_t:file read_file_perms;
+    	#read_files_pattern($1, ossec_queue_t, ossec_queue_t)
+')
+
+########################################
+## <summary>
+##      Allow trans to ossec tmp.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access
+##      </summary>
+## </param>
+#
+interface(`ossec_tmp_filetrans',`
+    	gen_require(`
+        	type var_t;
+        	type ossec_tmp_t;
+    	')
+
+    	allow $1 var_t:dir search_dir_perms;
+    	allow $1 ossec_tmp_t:dir search_dir_perms;
+    	filetrans_pattern($1, ossec_tmp_t, $2, $3, $4)
+')
 
 #interface(`ossec_manage_shared_config',`
 #	gen_require(`
@@ -125,138 +266,7 @@ interface(`ossec_read_config',`
 #	manage_files_pattern($1, ossec_etc_share_t, ossec_etc_share_t)
 #')
 
-interface(`ossec_pid_filetrans',`
-	gen_require(`
-        type var_t;
-		type ossec_var_t, ossec_var_run_t;
-	')
 
-    allow $1 var_t:dir search_dir_perms;
-	allow $1 ossec_var_t:dir search_dir_perms;
-	allow $1 ossec_var_run_t:lnk_file read_lnk_file_perms;
-	filetrans_pattern($1, ossec_var_run_t, $2, $3, $4)
-')
 
-interface(`ossec_log_filetrans',`
-	gen_require(`
-        type var_t;
-		type ossec_var_t, ossec_log_t;
-	')
 
-    allow $1 var_t:dir search_dir_perms;
-	allow $1 ossec_log_t:dir search_dir_perms;
-	filetrans_pattern($1, ossec_log_t, $2, $3, $4)
-')
-
-interface(`ossec_read_stats',`
-    gen_require(`
-        type var_t;
-        type ossec_stats_t;
-    ')
-
-    allow $1 var_t:dir search_dir_perms;
-    read_files_pattern($1, ossec_stats_t, ossec_stats_t)
-')
-
-interface(`ossec_manage_stats',`
-    gen_require(`
-        type var_t;
-        type ossec_stats_t;
-    ')
-
-    allow $1 var_t:dir search_dir_perms;
-    append_files_pattern($1, ossec_stats_t, ossec_stats_t)
-')
-
-interface(`ossec_read_queue',`
-    gen_require(`
-        type var_t;
-        type ossec_queue_t;
-    ')
-
-    allow $1 var_t:dir search_dir_perms;
-    allow $1 ossec_queue_t:dir list_dir_perms;
-    allow $1 ossec_queue_t:file read_file_perms;
-    allow $1 ossec_remoted_file_t:dir list_dir_perms;
-    allow $1 ossec_remoted_file_t:file read_file_perms;
-    allow $1 ossec_analysisd_file_t:dir list_dir_perms;
-    allow $1 ossec_analysisd_file_t:file read_file_perms;
-    #read_files_pattern($1, ossec_queue_t, ossec_queue_t)
-')
-
-########################################
-## <summary>
-##      Create objects in the spool directory
-##      with a private type with a type transition.
-## </summary>
-## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
-## </param>
-## <param name="file">
-##      <summary>
-##      Type to which the created node will be transitioned.
-##      </summary>
-## </param>
-## <param name="class">
-##      <summary>
-##      Object class(es) (single or set including {}) for which this
-##      the transition will occur.
-##      </summary>
-## </param>
-## <param name="name" optional="true">
-##      <summary>
-##      The name of the object being created.
-##      </summary>
-## </param>
-#
-interface(`ossec_queue_filetrans',`
-    gen_require(`
-        type var_t;
-        type ossec_queue_t;
-    ')
-
-    allow $1 var_t:dir search_dir_perms;
-    allow $1 ossec_queue_t:dir search_dir_perms;
-    filetrans_pattern($1, ossec_queue_t, $2, $3, $4)
-')
-
-########################################
-## <summary>
-##      Create objects in the tmp directory
-##      with a private type with a type transition.
-## </summary>
-## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
-## </param>
-## <param name="file">
-##      <summary>
-##      Type to which the created node will be transitioned.
-##      </summary>
-## </param>
-## <param name="class">
-##      <summary>
-##      Object class(es) (single or set including {}) for which this
-##      the transition will occur.
-##      </summary>
-## </param>
-## <param name="name" optional="true">
-##      <summary>
-##      The name of the object being created.
-##      </summary>
-## </param>
-#
-interface(`ossec_tmp_filetrans',`
-    gen_require(`
-        type var_t;
-        type ossec_tmp_t;
-    ')
-
-    allow $1 var_t:dir search_dir_perms;
-    allow $1 ossec_tmp_t:dir search_dir_perms;
-    filetrans_pattern($1, ossec_tmp_t, $2, $3, $4)
-')
 
