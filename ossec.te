@@ -170,27 +170,26 @@ files_pid_file(ossec_var_run_t)
 #
 # ossec local policy
 #
-
-require {
+gen_require(` 
 	type hi_reserved_port_t;
 	type iptables_var_run_t;
-
-#	class file { rename read lock create write getattr unlink open append entrypoint };
+	type system_dbusd_t;
+	type system_dbusd_var_run_t;
 	class file { read lock open unlock };
-	#class dir { write getattr read remove_name create add_name };
-#	class process { setsched transition rlimitinh siginh noatsecure };
-#	class capability { dac_override dac_read_search setuid setgid fsetid sys_chroot sys_nice };
-	class tcp_socket { create name_bind name_connect };
-	class udp_socket { create bind name_bind node_bind };
-}
+')
 
 ########################################
 #
 # ossec active response policy
 #
+
 allow ossec_ar_t self:capability { net_admin net_raw };
 allow ossec_ar_t self:rawip_socket { create getopt setopt };
 allow ossec_ar_t ossec_execd_t:unix_dgram_socket { read write };
+
+# firewalld:
+allow ossec_ar_t system_dbusd_t:unix_stream_socket connectto;
+allow ossec_ar_t system_dbusd_var_run_t:dir search_dir_perms;
 
 allow ossec_ar_t ossec_log_t:file { create_file_perms append_file_perms read };
 search_dirs_pattern(ossec_ar_t, ossec_log_t, ossec_log_t)
@@ -205,6 +204,8 @@ kernel_getattr_proc(ossec_ar_t)
 kernel_read_all_proc(ossec_ar_t)
 
 auth_read_passwd(ossec_ar_t)
+
+miscfiles_read_generic_certs(ossec_ar_t)
 
 tunable_policy(`ossec_ar_can_edit_iptables',`
 	# Allow ar to add and remove ip from chain
@@ -379,6 +380,7 @@ miscfiles_read_generic_certs(ossec_monitord_t)
 #
 # ossec remoted policy
 #
+
 allow ossec_remoted_t self:capability { dac_override dac_read_search setuid setgid sys_chroot };
 
 allow ossec_remoted_t ossec_log_t:file { create_file_perms append_file_perms read };
@@ -477,7 +479,6 @@ userdom_search_user_tmp_dirs(ossec_syscheckd_t)
 #################
 # Questionable:
 #seutil_read_bin_policy(ossec_syscheckd_t)
-
 
 
 
