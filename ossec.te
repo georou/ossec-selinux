@@ -474,11 +474,3 @@ sysnet_read_config(ossec_syscheckd_t)
 
 userdom_search_user_tmp_dirs(ossec_syscheckd_t)
 
-
-
-#################
-# Questionable:
-#seutil_read_bin_policy(ossec_syscheckd_t)
-
-
-
