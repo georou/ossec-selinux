@@ -8,6 +8,13 @@ I have altered it with improvements and also added booleans to help limit uninte
 
 As listed below, what works and what isn't tested.
 
+### Needed Tweaks:
+The firewall{d}-drop.sh scrip has a variable $PWD which as OSSEC execd does not chroot, returns as the / directory. This needs to be changed so that the pid and lock files it creates are done so in `/var/ossec/var/run`. You WILL need to make this change:
+```
+firewalld{d}-drop.sh:
+#PWD=`pwd`
+PWD="/var/ossec/var/run"
+```
 
 ### Booleans needed for specific functions:
 ```
