@@ -1,4 +1,4 @@
-policy_module(ossec,1.2.0)
+policy_module(ossec,1.2.1)
 
 ########################################
 #
@@ -190,6 +190,7 @@ allow ossec_ar_t ossec_execd_t:unix_dgram_socket { read write };
 # firewalld:
 allow ossec_ar_t system_dbusd_t:unix_stream_socket connectto;
 allow ossec_ar_t system_dbusd_var_run_t:dir search_dir_perms;
+firewalld_dbus_chat(ossec_ar_t)
 
 allow ossec_ar_t ossec_log_t:file { create_file_perms append_file_perms read };
 search_dirs_pattern(ossec_ar_t, ossec_log_t, ossec_log_t)

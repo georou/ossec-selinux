@@ -6,7 +6,7 @@ This is a fork from the original policy written by Psi-Jack at [Linux-Help.org -
 
 I have altered it with improvements and also added booleans to help limit unintentional access as described below. It should now be the correct style according to the [Tresys Style Guide](https://github.com/TresysTechnology/refpolicy/wiki/StyleGuide).
 
-As listed below, what works and what isn't tested.
+As listed below, what works and what isn't tested. Please note this policy is complex and is in a beta state.
 
 ### Needed Tweaks:
 The firewall{d}-drop.sh scrip has a variable $PWD which as OSSEC execd does not chroot, returns as the / directory. This needs to be changed so that the pid and lock files it creates are done so in `/var/ossec/var/run`. You WILL need to make this change:
