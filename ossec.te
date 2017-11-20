@@ -204,6 +204,8 @@ ossec_pid_filetrans(ossec_ar_t, ossec_var_run_t, file)
 kernel_getattr_proc(ossec_ar_t)
 kernel_read_all_proc(ossec_ar_t)
 
+dbus_send_system_bus(ossec_ar_t)
+
 auth_read_passwd(ossec_ar_t)
 
 miscfiles_read_generic_certs(ossec_ar_t)
