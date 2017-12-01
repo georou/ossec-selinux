@@ -187,11 +187,6 @@ allow ossec_ar_t self:capability { net_admin net_raw };
 allow ossec_ar_t self:rawip_socket { create getopt setopt };
 allow ossec_ar_t ossec_execd_t:unix_dgram_socket { read write };
 
-# firewalld:
-allow ossec_ar_t system_dbusd_t:unix_stream_socket connectto;
-allow ossec_ar_t system_dbusd_var_run_t:dir search_dir_perms;
-firewalld_dbus_chat(ossec_ar_t)
-
 allow ossec_ar_t ossec_log_t:file { create_file_perms append_file_perms read };
 search_dirs_pattern(ossec_ar_t, ossec_log_t, ossec_log_t)
 search_dirs_pattern(ossec_ar_t, ossec_ar_bin_t, ossec_ar_bin_t)
@@ -204,7 +199,6 @@ ossec_pid_filetrans(ossec_ar_t, ossec_var_run_t, file)
 kernel_getattr_proc(ossec_ar_t)
 kernel_read_all_proc(ossec_ar_t)
 
-dbus_send_system_bus(ossec_ar_t)
 dbus_session_bus_client(ossec_ar_t)
 dbus_system_bus_client(ossec_ar_t)
 
@@ -224,9 +218,6 @@ tunable_policy(`ossec_ar_can_exec_system_bin',`
 ')
 
 optional_policy(`
-        # firewalld:
-        #allow ossec_ar_t system_dbusd_t:unix_stream_socket connectto;
-        allow ossec_ar_t system_dbusd_var_run_t:dir search_dir_perms;
         firewalld_dbus_chat(ossec_ar_t)
 ')
 
