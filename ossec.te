@@ -124,7 +124,7 @@ type ossec_remoted_port_t;
 corenet_port(ossec_remoted_port_t)
 
 type ossec_remoted_configfile_t;
-files_config_file(ossec_remoted_configfile_t);
+files_config_file(ossec_remoted_configfile_t)
 
 type ossec_remoted_file_t;
 files_type(ossec_remoted_file_t)

@@ -2,11 +2,24 @@
 
 This policy is written to contain the wide and varried access of [OSSEC](https://ossec.github.io).
 
-This is a fork from the original policy written by Psi-Jack at [Linux-Help.org - Git](https://git.linux-help.org/Linux-Help/selinux-ossec/src/bugfix/style-organization/ossec.te). Many thanks to his hours of work on the original.
+This is a fork from the original policy written by Psi-Jack at [Linux-Help.org - Git](https://git.linux-help.org/Linux-Help/selinux-ossec/src/bugfix/style-organization/ossec.te). Many thanks to his hours of work on the original policy.
 
-I have altered it with improvements and also added booleans to help limit unintentional access as described below. It should now be the correct style according to the [Tresys Style Guide](https://github.com/TresysTechnology/refpolicy/wiki/StyleGuide).
+I have altered it with improvements, changing the unconfined domain of ossec_ar to confined and also added booleans to help limit unintentional access as described below. It should now be the correct style according to the [Tresys Style Guide](https://github.com/TresysTechnology/refpolicy/wiki/StyleGuide). The original commit of the policy is [here](https://github.com/georou/ossec-selinux/commit/ef2a8d9ba92b315943baf4a4ed941b3c4395a0cc) and then my subsequent [changes](https://github.com/georou/ossec-selinux/commit/475d3138dc8571d8d539572d7a07bc25635348df).
 
-As listed below, what works and what isn't tested. Please note this policy is complex and is in a beta state.
+Since the Active Response function of OSSEC is now confined, using the scripts listed in the "Not Tested/Broken" section will most likely not work. At the moment this is because I don't use them and haven't had time to implement them. 
+As listed below, what works and what isn't tested. Please note this policy is complex and is in a beta state. However, it is somewhat production ready but the usual monitoring of AVC denails needs to be observed. I currently use it for my systems and will continually commit changes here as they arise.
+
+
+### Working:
+* All basic functionality - monitoring of logs and reporting via email etc.
+* Using Active-Response to block IP addresses for iptables and firewalld in `/var/ossec/active-response/bin/firewall{d}-drop.sh`
+
+
+### Not Tested/Broken:
+* All of the following Active-Reponse scripts are untested: (`disable-account.sh  host-deny.sh  ip-customblock.sh  ossec-slack.sh  ossec-tweeter.sh  restart-ossec.sh  route-null.sh`)
+* Using remote agents is untested and partially implemented with remoted_t. You will need to enable it's boolean. remoted uses ports 1514 and 514. ossec_remoted_port_t has been defined.
+* csyslogd is untested
+* dbd is untested
 
 ### Needed Tweaks:
 The firewall{d}-drop.sh scrip has a variable $PWD which as OSSEC execd does not chroot, returns as the / directory. This needs to be changed so that the pid and lock files it creates are done so in `/var/ossec/var/run`. You WILL need to make this change:
@@ -28,19 +41,8 @@ ossec_can_read_all_system_logs --> off
 * If you don't enable the read_all_system_logs boolean, you will need to add the logs you want OSSEC to read. Otherwise if you're fine with the access, enable: `setsebool -P ossec_can_read_all_system_lods on`
 
 
-### Working:
-* All basic functionality
-* Using Active-Response to block IP addresses for iptables and firewalld in `/var/ossec/active-response/bin/firewall{d}-drop.sh`
 
-
-### Not Tested/Broken:
-* All of the following Active-Reponse scripts are untested: (`disable-account.sh  host-deny.sh  ip-customblock.sh  ossec-slack.sh  ossec-tweeter.sh  restart-ossec.sh  route-null.sh`)
-* Using remote agents is untested and partially implemented with remoted_t. You will need to enable it's boolean. remoted uses ports 1514 and 514. ossec_remoted_port_t has been defined.
-* csyslogd is untested
-* dbd is untested
-
-
-## Installation
+## Installation:
 ```sh
 # Clone the repo
 git clone https://github.com/georou/ossec-selinux.git
