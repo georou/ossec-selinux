@@ -47,6 +47,9 @@ ossec_can_read_all_system_logs --> off
 # Clone the repo
 git clone https://github.com/georou/ossec-selinux.git
 
+# Optional - Copy relevant .if interface file to /usr/share/selinux/devel/include to expose them when building future modules. Safe to ignore duplicate warnings when using make -f
+install -Dp -m 0664 -o root -g root ossec.if /usr/share/selinux/devel/include/myapplications/ossec.if
+
 # Compile the selinux module (see below)
 
 # Install the SELinux policy module. Compile it before hand to ensure proper compatibility (see below)
