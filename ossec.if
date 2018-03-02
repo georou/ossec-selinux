@@ -35,11 +35,10 @@ interface(`ossec_domtrans',`
 #
 interface(`ossec_log_filetrans',`
 	gen_require(`
-    		type var_t;
 		type ossec_var_t, ossec_log_t;
 	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
 	allow $1 ossec_log_t:dir { search_dir_perms create_dir_perms };
 	filetrans_pattern($1, ossec_log_t, $2, $3, $4)
 ')
@@ -56,11 +55,10 @@ interface(`ossec_log_filetrans',`
 #
 interface(`ossec_manage_stats',`
     	gen_require(`
-        	type var_t;
         	type ossec_stats_t;
     	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
     	append_files_pattern($1, ossec_stats_t, ossec_stats_t)
 ')
 
@@ -76,11 +74,10 @@ interface(`ossec_manage_stats',`
 #
 interface(`ossec_pid_filetrans',`
 	gen_require(`
-        type var_t;
 		type ossec_var_t, ossec_var_run_t;
 	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
 	allow $1 ossec_var_t:dir search_dir_perms;
 	allow $1 ossec_var_run_t:lnk_file read_lnk_file_perms;
 	filetrans_pattern($1, ossec_var_run_t, $2, $3, $4)
@@ -98,11 +95,10 @@ interface(`ossec_pid_filetrans',`
 #
 interface(`ossec_queue_filetrans',`
     	gen_require(`
-        	type var_t;
         	type ossec_queue_t;
     	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
     	allow $1 ossec_queue_t:dir search_dir_perms;
     	filetrans_pattern($1, ossec_queue_t, $2, $3, $4)
 ')
@@ -119,11 +115,10 @@ interface(`ossec_queue_filetrans',`
 #
 interface(`ossec_read_config',`
 	gen_require(`
-        type var_t;
 		type ossec_etc_t;
 	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
     	#allow $1 ossec_etc_t:dir search_dir_perms;
 	read_lnk_files_pattern($1, ossec_etc_t, configfile)
     	files_read_config_files($1, ossec_etc_t)
@@ -141,11 +136,10 @@ interface(`ossec_read_config',`
 #
 interface(`ossec_read_logs',`
         gen_require(`
-                type var_t;
                 type ossec_log_t;
         ')
 
-        allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
         #read_files_pattern($1, ossec_log_t, ossec_log_t)
         read_files_pattern($1, ossec_log_t, logfile)
         #allow $1 ossec_log_t:dir search_dir_perms
@@ -183,11 +177,10 @@ interface(`ossec_read_logs',`
 #
 interface(`ossec_read_stats',`
     	gen_require(`
-        	type var_t;
         	type ossec_stats_t;
     	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
     	read_files_pattern($1, ossec_stats_t, ossec_stats_t)
 ')
 
@@ -220,11 +213,10 @@ interface(`ossec_read_stats',`
 #
 interface(`ossec_read_queue',`
     	gen_require(`
-        	type var_t;
         	type ossec_queue_t;
     	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
     	allow $1 ossec_queue_t:dir list_dir_perms;
     	allow $1 ossec_queue_t:file read_file_perms;
     	allow $1 ossec_remoted_file_t:dir list_dir_perms;
@@ -246,11 +238,10 @@ interface(`ossec_read_queue',`
 #
 interface(`ossec_tmp_filetrans',`
     	gen_require(`
-        	type var_t;
         	type ossec_tmp_t;
     	')
 
-    	allow $1 var_t:dir search_dir_perms;
+	files_search_var($1)
     	allow $1 ossec_tmp_t:dir search_dir_perms;
     	filetrans_pattern($1, ossec_tmp_t, $2, $3, $4)
 ')
@@ -265,8 +256,3 @@ interface(`ossec_tmp_filetrans',`
 #	search_dirs_pattern($1, ossec_etc_share_t, ossec_etc_share_t)
 #	manage_files_pattern($1, ossec_etc_share_t, ossec_etc_share_t)
 #')
-
-
-
-
-

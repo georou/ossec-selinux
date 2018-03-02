@@ -423,7 +423,7 @@ tunable_policy(`ossec_remoted_can_network_connect',`
 # ossec syscheckd policy
 #
 
-allow ossec_syscheckd_t self:capability { dac_override dac_read_search kill setuid setgid sys_chroot sys_nice };
+allow ossec_syscheckd_t self:capability { dac_override dac_read_search kill setuid setgid sys_chroot sys_nice sys_ptrace };
 allow ossec_syscheckd_t self:process { setsched };
 allow ossec_syscheckd_t self:tcp_socket create_socket_perms;
 allow ossec_syscheckd_t self:udp_socket create_socket_perms;
