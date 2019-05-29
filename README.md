@@ -67,6 +67,29 @@ systemctl start ossec-hids.service
 ps -eZ | grep ossec
 ```
 
+## How To Compile The Module Locally (Needed before installing)
+Ensure you have the `selinux-policy-devel` package installed.
+```sh
+# Ensure you have the devel packages
+yum install selinux-policy-devel setools-console
+# Change to the directory containing the .if, .fc & .te files
+cd ossec-selinux
+make -f /usr/share/selinux/devel/Makefile ossec.pp
+semodule -i ossec.pp
+```
+
+## Debugging and Troubleshooting
+
+* If you're getting permission errors, uncomment permissive in the .te file and try again. Re-check logs for any issues. Or `semanage permissive -a ossec_t`
+* Easy way to add in allow rules is the below command, then copy or redirect into the .te module. Rebuild and re-install:
+* Don't forget to actually look at what is suggested. audit2allow will most likely go for a coarse grained permission!
+
+```sh
+ausearch -m avc,user_avc,selinux_err -ts recent | audit2allow -R
+```
+If you get a could not open interface info [/var/lib/sepolgen/interface_info] error. 
+Ensure policycoreutils-devel is installed and/or run: `sepolgen-ifgen`
+
 
 ## Compatibility Notes
 Built on CentOS 7.4 at the time with:
