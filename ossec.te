@@ -227,6 +227,7 @@ optional_policy(`
 #
 
 allow ossec_analysisd_t self:capability { dac_override dac_read_search fsetid setuid setgid sys_chroot };
+allow ossec_analysisd_t self:process execmem;
 allow ossec_analysisd_t self:unix_dgram_socket create_stream_socket_perms;
 
 allow ossec_analysisd_t ossec_log_t:file { create_file_perms append_file_perms read link unlink };
